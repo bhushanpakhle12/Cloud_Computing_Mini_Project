@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Obfuscation App</title>
+    <link rel="stylesheet" href="static\styles.css">
+</head>
+<body>
+    <div class="container">
+    <h1>Image Obfuscation App</h1>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('encrypt') }}">
+        <label for="image">Upload an image:</label class="inputs">
+        <input type="file" name="image" id="image" class="inputs">
+        <button type="submit" value="Encrypt" id="encrypt-button">Encrypt</button>
+    </form>
+    <form method="POST" action="{{ url_for('decrypt') }}">
+        <input type="hidden" name="image" id="decrypted-image-input" class="inputs">
+        <button type="submit" value="Decrypt" id="decrypt-button">Decrypt</button>
+    </form>
+</div><br/>
+<div class="container">
+    <div id="encrypted-image">
+        <h2>Encrypted Image:</h2>
+        <img id="encrypted-img" alt="">
+    </div></div>
+
+ <br/>  
+<div class="container"> 
+    <div id="decrypted-image">
+        <h2>Decrypted Image:</h2>
+        <img id="decrypted-img" alt="">
+    </div></div>
+    <script>
+        const encryptButton = document.querySelector('#encrypt-button');
+        const decryptedImageInput = document.querySelector('#decrypted-image-input');
+        const decryptedImage = document.querySelector('#decrypted-img');
+        const decryptButton = document.querySelector('#decrypt-button');
+
+        encryptButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            const image = document.querySelector('#image').files[0];
+            const formData = new FormData();
+            formData.append('image', image);
+
+            fetch('{{ url_for("encrypt") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const encryptedImg = document.querySelector('#encrypted-img');
+                encryptedImg.src = `data:image/jpeg;base64,${data.image}`;
+                decryptedImageInput.value = data.image;
+                decryptButton.disabled = false;
+            });
+        });
+
+        decryptButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append('image', decryptedImageInput.value);
+
+            fetch('{{ url_for("decrypt") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                decryptedImage.src = `data:image/jpeg;base64,${data.image}`;
+            });
+        });
+    </script>
+</body>
+</html>
